@@ -1,109 +1,160 @@
 # Adaptive Spatial Indexing
 
-Online adaptive spatial index selection for fixed-radius neighbor search
-in dynamic particle systems.
+**Online adaptive spatial index selection for fixed-radius neighbor search in dynamic particle systems.**
 
-## English
+[Русская версия](README_RU.md)
 
-`adaptive-spatial-indexing` is a research-oriented C++20 project focused on
-efficient fixed-radius neighbor search in dynamic particle systems.
+`adaptive-spatial-indexing` is a research-oriented C++20 project for the comparative study of spatial indexing methods under dynamic particle workloads.
 
-In these systems, particles continuously change their positions. At every
-simulation step, the system must find all pairs of particles located within
-a specified interaction radius.
+This repository is **not** intended to demonstrate one preferred spatial data structure. It is designed as an experimental framework for implementing, validating, benchmarking, and comparing several neighbor-search approaches under changing distributions, motion patterns, and hardware configurations.
 
-Different spatial indexing methods perform differently depending on:
+## Problem
 
-- the number of particles;
-- particle density and clustering;
-- the size of the search radius;
-- particle movement between simulation steps;
-- the cost of rebuilding or updating the index;
-- CPU and GPU architecture.
+A dynamic particle system contains points whose positions change over time. At every simulation step, the system must find all particle pairs whose distance does not exceed a fixed interaction radius.
 
-The project will implement and evaluate several approaches:
+A brute-force search checks every pair and provides a simple correctness reference, but its quadratic cost makes it unsuitable for large systems. Spatial indices reduce the number of candidate pairs, although their performance depends strongly on the workload.
 
-- brute-force pair search;
-- uniform grids;
-- hashed grids;
-- spatial sorting;
-- BVH-based search;
-- index reuse, update, and rebuild strategies;
-- online adaptive method selection.
+The project studies the trade-off between:
 
-The long-term goal is to build an adaptive system that analyzes the current
-particle distribution and dynamically selects the most efficient spatial
-index and update strategy.
+- **query performance** — latency, throughput, and candidate-pair count;
+- **update cost** — construction, reuse, refit, and rebuild overhead;
+- **memory usage** — index storage and neighbor-list representation;
+- **robustness** — behavior across uniform, sparse, clustered, and changing workloads.
 
-The evaluation will include:
+## Research question
 
-- correctness against a brute-force reference;
-- index construction and update time;
+> Can an online policy select a spatial index and update strategy that approaches the performance of the best specialized method across changing dynamic workloads?
+
+The selector will eventually use inexpensive workload characteristics such as particle count, density variance, cell occupancy, displacement, radius, and previous timing measurements.
+
+## Approaches under study
+
+| Family | Planned approaches | Main purpose |
+|---|---|---|
+| Correctness baseline | brute-force pair search | produce exact reference neighbor pairs |
+| Regular grids | dense uniform grid | exploit uniform spatial locality |
+| Sparse grids | hashed grid | avoid storage for empty regions |
+| Spatial ordering | Morton/Z-order sorting and contiguous cell ranges | improve locality and reduce allocation overhead |
+| Hierarchical indices | BVH-based search | handle clustered and non-uniform distributions |
+| Dynamic strategies | reuse, refit, partial update, rebuild | reduce per-step maintenance cost |
+| Adaptive policies | online index and parameter selection | approach the fastest method for the current workload |
+| Parallel variants | multicore CPU and GPU implementations | study scalability and hardware crossover points |
+
+No method is assumed to be universally best. The goal is to identify the workload regions in which each approach is competitive and to compare an adaptive policy with fixed methods and an oracle baseline.
+
+## Experimental workloads
+
+The benchmark suite will include controlled particle distributions and motion models:
+
+- uniform distributions;
+- sparse domains;
+- one or several dense clusters;
+- moving clusters;
+- rapidly changing distributions;
+- different particle counts and search radii;
+- later, variable-density and variable-radius scenarios.
+
+Each optimized implementation will be checked against the brute-force reference.
+
+## Evaluation metrics
+
+### Correctness
+
+- exact agreement with brute-force neighbor pairs;
+- duplicate and missing pair detection;
+- deterministic result validation where applicable.
+
+### Performance
+
+- index construction time;
+- update, refit, reuse, and rebuild time;
 - neighbor-search latency;
-- throughput;
-- memory usage;
-- scalability;
-- performance across uniform, sparse, clustered, and dynamically changing
-  workloads.
+- particles and queries processed per second;
+- candidate checks and accepted neighbor pairs;
+- speedup over brute force and fixed-index baselines.
 
-### Research question
+### Memory and scalability
 
-Can an online adaptive policy select spatial indexing and update strategies
-that approach the performance of the best specialized method across changing
-particle workloads?
+- bytes per particle;
+- index and neighbor-list memory;
+- scaling with particle count;
+- multicore efficiency;
+- later, CPU/GPU crossover behavior.
 
-### Development status
+### Adaptive quality
 
-The project is developed incrementally.
+- method-selection accuracy;
+- overhead of feature collection and decision making;
+- regret relative to an oracle that knows the fastest method in advance;
+- stability under changing workloads.
 
-## Русский
+## Experimental methodology
 
-`adaptive-spatial-indexing` — исследовательский проект на C++20, посвящённый
-эффективному поиску соседей в заданном радиусе в динамических системах частиц.
+Experiments will separate:
 
-В таких системах частицы постоянно изменяют своё положение. На каждом шаге
-симуляции необходимо находить все пары частиц, расстояние между которыми не
-превышает заданный радиус взаимодействия.
+- workload generation;
+- index construction or update;
+- candidate traversal;
+- exact distance checks;
+- result materialization;
+- correctness validation;
+- CSV export and analysis.
 
-Производительность различных пространственных индексов зависит от:
+Every report should record the compiler, optimization flags, CPU/GPU model, thread count, particle count, domain size, radius, distribution parameters, movement model, warm-up policy, repetitions, and summary statistics.
 
-- количества частиц;
-- плотности и степени кластеризации;
-- перемещения частиц между шагами;
-- стоимости перестроения и обновления индекса;
-- архитектуры CPU и GPU.
+## Roadmap
 
-В проекте будут реализованы и исследованы:
+- [ ] C++20 project infrastructure
+- [ ] 2D particle and workload representation
+- [ ] brute-force correctness baseline
+- [ ] dense uniform-grid implementation
+- [ ] reproducible workload generators and benchmarks
+- [ ] clustered and dynamically changing scenarios
+- [ ] hashed-grid implementation
+- [ ] spatial sorting and contiguous storage
+- [ ] index reuse and rebuild experiments
+- [ ] workload feature collection
+- [ ] online adaptive method selection
+- [ ] BVH-based baseline
+- [ ] multicore CPU implementations
+- [ ] 3D workloads
+- [ ] GPU implementations and CPU/GPU selection
 
-- полный перебор пар;
-- равномерные пространственные сетки;
-- хешированные сетки;
-- пространственная сортировка;
-- поиск на основе BVH;
-- переиспользование, обновление и перестроение индексов;
-- автоматический выбор метода во время выполнения.
+## Planned repository structure
 
-Долгосрочная цель проекта — создать адаптивную систему, которая анализирует
-текущее распределение частиц и динамически выбирает наиболее эффективный
-пространственный индекс и стратегию его обновления.
+```text
+adaptive-spatial-indexing/
+├── include/                 # public C++ interfaces
+├── src/                     # index implementations
+├── tests/                   # correctness tests against brute force
+├── benchmarks/              # microbenchmarks and scenario benchmarks
+├── apps/                    # experiment runners and CLI tools
+├── experiments/
+│   ├── configs/             # reproducible workload definitions
+│   ├── results/             # generated CSV data
+│   └── scripts/             # Python analysis and plotting
+└── reports/                 # tables, figures, and technical notes
+```
 
-Будут измеряться:
+## Current status
 
-- корректность относительно полного перебора;
-- время построения и обновления индекса;
-- задержка поиска соседей;
-- пропускная способность;
-- потребление памяти;
-- масштабируемость;
-- производительность на равномерных, разреженных, кластеризованных и
-  динамически изменяющихся наборах частиц.
+**Planned / research design stage.**
 
-### Исследовательский вопрос
+The first implementation phase will be CPU-only and deliberately narrow: 2D particles, brute force, a uniform grid, correctness tests, and reproducible benchmarks.
 
-Может ли адаптивная система во время выполнения выбирать пространственный
-индекс и стратегию обновления так, чтобы приближаться к производительности
-лучшего специализированного метода на изменяющихся сценариях?
+BVHs, adaptive policies, GPU acceleration, and advanced dynamic-update strategies will be added only after the baseline methodology is reliable.
 
-### Статус разработки
+## Technology direction
 
-Проект будет разрабатываться поэтапно.
+- C++20;
+- CMake;
+- GoogleTest;
+- Google Benchmark;
+- sanitizers;
+- Python for result analysis and plotting;
+- OpenMP later;
+- CUDA later.
+
+## License
+
+This project is licensed under the MIT License.
