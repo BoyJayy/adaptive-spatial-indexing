@@ -56,24 +56,6 @@ particle workloads?
 
 The project is developed incrementally.
 
-Current roadmap:
-
-1. C++20 project infrastructure;
-2. 2D particle representation;
-3. brute-force correctness baseline;
-4. uniform-grid implementation;
-5. reproducible benchmarks and workload generators;
-6. hashed grids and spatial sorting;
-7. dynamic index reuse and rebuild policies;
-8. BVH-based search;
-9. online adaptive method selection;
-10. parallel CPU and GPU implementations.
-
-Development of the implementation will begin after the first
-`image-similarity-lab` milestone is completed.
-
----
-
 ## Русский
 
 `adaptive-spatial-indexing` — исследовательский проект на C++20, посвящённый
@@ -87,7 +69,6 @@ Development of the implementation will begin after the first
 
 - количества частиц;
 - плотности и степени кластеризации;
-- радиуса поиска;
 - перемещения частиц между шагами;
 - стоимости перестроения и обновления индекса;
 - архитектуры CPU и GPU.
@@ -126,19 +107,3 @@ Development of the implementation will begin after the first
 ### Статус разработки
 
 Проект будет разрабатываться поэтапно.
-
-План:
-
-1. инфраструктура C++20-проекта;
-2. представление двумерных частиц;
-3. эталонный полный перебор;
-4. равномерная пространственная сетка;
-5. воспроизводимые benchmarks и генераторы сценариев;
-6. хешированные сетки и пространственная сортировка;
-7. стратегии переиспользования и перестроения индекса;
-8. поиск на основе BVH;
-9. автоматический выбор метода;
-10. параллельные реализации для CPU и GPU.
-
-Разработка реализации начнётся после завершения первого полноценного этапа
-`image-similarity-lab`.
